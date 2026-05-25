@@ -1,5 +1,7 @@
 // src/services/api.ts
-const BASE = '/api';
+// 本地 dev：Vite 代理 /api → localhost:8000
+// Vercel 生产：同域部署，默认 /api 即可；跨域时在 .env 设置 VITE_API_BASE
+const BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') || '/api';
 
 /* ─── Helper：把后端富错误信息拆出来 ─── */
 class ApiError extends Error {
@@ -10,7 +12,7 @@ class ApiError extends Error {
 async function readError(r: Response): Promise<ApiError> {
   let d: any = {};
   try { d = await r.json(); } catch {}
-  const msg = d.detail || d.message || (r.status === 0 ? '无法连接到后端（请确认 uvicorn 已启动在 8000 端口）' : `请求失败（HTTP ${r.status}）`);
+  const msg = d.detail || d.message || (r.status === 0 ? '无法连接到后端 API' : `请求失败（HTTP ${r.status}）`);
   const e = new ApiError(msg);
   e.status = r.status;
   e.errorCode = d.error_code;
@@ -78,6 +80,28 @@ export async function saveMsg(sessionId: string, role: string, content: string, 
 export async function getHistory(sessionId: string) {
   const r = await fetch(`${BASE}/conversations?session_id=${encodeURIComponent(sessionId)}`, { headers: hdr() });
   if (!r.ok) return []; return r.json();
+}
+
+/* ─── Makeup AI ────────────────────────────────────── */
+export interface MakeupStyle {
+  id: string; name: string; name_en: string; description: string;
+}
+export async function fetchMakeupStyles(): Promise<MakeupStyle[]> {
+  const r = await fetch(`${BASE}/makeup/styles`);
+  if (!r.ok) throw await readError(r);
+  return r.json();
+}
+export async function tryOnMakeup(
+  img: string,
+  opts: { style?: string; prompt?: string; strength?: number } = {},
+): Promise<string> {
+  const r = await fetch(`${BASE}/makeup/try-on`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ original_image: img, ...opts }),
+  });
+  if (!r.ok) throw await readError(r);
+  return URL.createObjectURL(await r.blob());
 }
 
 /* ─── Image Edit ───────────────────────────────────── */

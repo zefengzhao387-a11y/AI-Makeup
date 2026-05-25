@@ -1,8 +1,9 @@
 // miniprogram/app.js
+const { apiBase } = require('./config');
+
 App({
   globalData: {
-    // ⚠️ 部署时改成你后端的真实地址
-    apiBase: 'https://your-domain.vercel.app/api',
+    apiBase,
     token: '',
     userId: 0,
     favorites: [],  // [productId, ...]

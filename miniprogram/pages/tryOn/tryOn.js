@@ -1,7 +1,16 @@
 const app = getApp();
 
 Page({
-  data: { original: '', result: '', prompt: '', loading: false, error: '' },
+  data: { original: '', result: '', prompt: '', style: '', styles: [], loading: false, error: '' },
+
+  onLoad() {
+    wx.request({
+      url: app.globalData.apiBase + '/makeup/styles',
+      success: (r) => {
+        if (r.statusCode >= 200 && r.statusCode < 300) this.setData({ styles: r.data || [] });
+      },
+    });
+  },
 
   onChooseImage() {
     wx.chooseMedia({
@@ -15,8 +24,13 @@ Page({
 
   onInput(e) { this.setData({ prompt: e.detail.value }); },
 
+  onStyleTap(e) {
+    const id = e.currentTarget.dataset.id;
+    this.setData({ style: this.data.style === id ? '' : id });
+  },
+
   async onApply() {
-    if (!this.data.original || !this.data.prompt.trim()) return;
+    if (!this.data.original || (!this.data.prompt.trim() && !this.data.style)) return;
     this.setData({ loading: true, error: '' });
 
     try {
@@ -28,10 +42,10 @@ Page({
       // 调用后端
       const res = await new Promise((resolve, reject) => {
         wx.request({
-          url: app.globalData.apiBase + '/image-edit',
+          url: app.globalData.apiBase + '/makeup/try-on',
           method: 'POST',
           header: { 'Content-Type': 'application/json' },
-          data: { original_image: dataUrl, edit_prompt: this.data.prompt, strength: 0.55 },
+          data: { original_image: dataUrl, prompt: this.data.prompt, style: this.data.style || undefined, strength: 0.45 },
           responseType: 'arraybuffer',
           success(r) {
             if (r.statusCode >= 200 && r.statusCode < 300) resolve(r.data);
@@ -51,5 +65,5 @@ Page({
     }
   },
 
-  onReset() { this.setData({ original: '', result: '', prompt: '', error: '' }); },
+  onReset() { this.setData({ original: '', result: '', prompt: '', style: '', error: '' }); },
 });

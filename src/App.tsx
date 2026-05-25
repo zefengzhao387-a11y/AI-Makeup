@@ -105,6 +105,7 @@ const I18N: Record<Lang, Record<string, string>> = {
     'tryon.original': 'Original',
     'tryon.result': 'Result',
     'tryon.resultEmpty': 'Result will appear here',
+    'tryon.styles': 'Quick styles',
     'tryon.promptPlaceholder': 'e.g. Apply a coral lipstick, natural makeup',
     'tryon.apply': 'Apply',
     'tryon.processing': 'Processing…',
@@ -215,6 +216,7 @@ const I18N: Record<Lang, Record<string, string>> = {
     'tryon.original': '原图',
     'tryon.result': '效果',
     'tryon.resultEmpty': '效果图将在此显示',
+    'tryon.styles': '快速风格',
     'tryon.promptPlaceholder': '例如：涂上珊瑚色口红，淡妆',
     'tryon.apply': '生成',
     'tryon.processing': '处理中…',
@@ -415,6 +417,9 @@ img{display:block;max-width:100%}
 .to>p{color:var(--sub);margin-bottom:28px}
 .to-pre{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0}
 .to-pre img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--r);border:1px solid var(--border)}
+.to-styles{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.to-style{padding:8px 16px;border:1.5px solid var(--border);border-radius:40px;font-size:.82rem;cursor:pointer;background:var(--card);transition:.2s}
+.to-style:hover,.to-style.on{border-color:var(--accent);background:var(--accent2);color:var(--text)}
 
 /* Upload card —— 取消虚线，改用柔和渐变 + 投影 + hover 抬升 */
 .to-up{
@@ -911,13 +916,18 @@ function extractA(t:string){const q=t.toLowerCase();const r:any={};
 // ── Try On ────────────────────────────────────────────────
 function TryOn() {
   const t = useT();
+  const [lang] = useLang();
   const [orig,setOrig]=useState<string|null>(null);
   const [res,setRes]=useState<string|null>(null);
   const [prm,setPrm]=useState('');
+  const [style,setStyle]=useState('');
+  const [styles,setStyles]=useState<api.MakeupStyle[]>([]);
   const [ld,setLd]=useState(false);
   const [err,setErr]=useState('');
+  React.useEffect(()=>{api.fetchMakeupStyles().then(setStyles).catch(()=>{});},[]);
+  const canGo=!!(style||prm.trim());
   const up=(e:React.ChangeEvent<HTMLInputElement>)=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>setOrig(r.result as string);r.readAsDataURL(f);};
-  const go=async()=>{if(!orig||!prm.trim())return;setLd(true);setErr('');try{setRes(await api.editImage(orig,prm))}catch(e:any){setErr(e.message)}finally{setLd(false)}};
+  const go=async()=>{if(!orig||!canGo)return;setLd(true);setErr('');try{setRes(await api.tryOnMakeup(orig,{style:style||undefined,prompt:prm.trim()||undefined}))}catch(e:any){setErr(e.message)}finally{setLd(false)}};
   return (
     <div className="to">
       <h2>{t('tryon.title')}</h2>
@@ -941,12 +951,24 @@ function TryOn() {
             {res?<img src={res} alt="result"/>:<div style={{aspectRatio:'1',background:'var(--bg)',borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--sub)',border:'1px solid var(--border)'}}>{t('tryon.resultEmpty')}</div>}
           </div>
         </div>
+        {styles.length>0&&(
+          <div>
+            <div style={{fontSize:'.72rem',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase' as any,color:'var(--sub)',marginBottom:6}}>{t('tryon.styles')}</div>
+            <div className="to-styles">
+              {styles.map(s=>(
+                <button key={s.id} type="button" className={`to-style ${style===s.id?'on':''}`} onClick={()=>setStyle(style===s.id?'':s.id)}>
+                  {lang==='zh'?s.name:s.name_en}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div style={{display:'flex',gap:12,marginTop:14}}>
           <input value={prm} onChange={e=>setPrm(e.target.value)} placeholder={t('tryon.promptPlaceholder')} style={{flex:1,padding:'13px 20px',border:'1.5px solid var(--border)',borderRadius:40,fontSize:'.88rem',outline:'none'}} onKeyDown={e=>e.key==='Enter'&&go()}/>
-          <button className="btn btn-p" onClick={go} disabled={ld||!prm.trim()}>{ld?t('tryon.processing'):t('tryon.apply')}</button>
+          <button className="btn btn-p" onClick={go} disabled={ld||!canGo}>{ld?t('tryon.processing'):t('tryon.apply')}</button>
         </div>
         {err&&<p className="ferr" style={{marginTop:10}}>{err}</p>}
-        <button style={{marginTop:14,color:'var(--sub)',fontSize:'.85rem'}} onClick={()=>{setOrig(null);setRes(null);setPrm('')}}>{t('tryon.changePhoto')}</button>
+        <button style={{marginTop:14,color:'var(--sub)',fontSize:'.85rem'}} onClick={()=>{setOrig(null);setRes(null);setPrm('');setStyle('')}}>{t('tryon.changePhoto')}</button>
       </>)}
     </div>
   );

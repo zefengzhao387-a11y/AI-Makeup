@@ -25,9 +25,16 @@
       </view>
     </view>
 
+    <view class="style-row" wx:if="{{styles.length}}">
+      <text class="preview-label sub">快速风格</text>
+      <view class="style-chips">
+        <view wx:for="{{styles}}" wx:key="id" class="style-chip {{style === item.id ? 'on' : ''}}" data-id="{{item.id}}" bindtap="onStyleTap">{{item.name}}</view>
+      </view>
+    </view>
+
     <view class="action-bar">
       <input class="prompt-input" value="{{prompt}}" bindinput="onInput" bindconfirm="onApply" placeholder="例如：涂珊瑚色口红，自然妆容" />
-      <button class="btn btn-p apply-btn" bindtap="onApply" disabled="{{loading || !prompt}}">
+      <button class="btn btn-p apply-btn" bindtap="onApply" disabled="{{loading || (!prompt && !style)}}">
         {{loading ? '处理中…' : '应用'}}
       </button>
     </view>

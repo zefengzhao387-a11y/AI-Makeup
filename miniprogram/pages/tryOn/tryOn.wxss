@@ -12,6 +12,10 @@
 .preview-placeholder { width: 100%; aspect-ratio: 1; border-radius: 16rpx; border: 2rpx solid #F0EDE8; background: #FAF9F6; display: flex; align-items: center; justify-content: center; font-size: 24rpx; }
 
 .action-bar { display: flex; gap: 14rpx; align-items: center; }
+.style-row { margin-bottom: 20rpx; }
+.style-chips { display: flex; flex-wrap: wrap; gap: 12rpx; margin-top: 12rpx; }
+.style-chip { padding: 12rpx 24rpx; border: 2rpx solid #F0EDE8; border-radius: 50rpx; font-size: 24rpx; background: #fff; }
+.style-chip.on { border-color: #C8956C; background: #E8C4A8; }
 .prompt-input { flex: 1; padding: 20rpx 28rpx; border: 2rpx solid #F0EDE8; border-radius: 50rpx; font-size: 28rpx; }
 .apply-btn { padding: 20rpx 36rpx; font-size: 26rpx; min-width: auto; }
 
