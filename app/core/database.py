@@ -63,7 +63,7 @@ async def init_db():
     本地开发用；生产环境建议用迁移工具。
     """
     # 导入所有模型让 Base.metadata 知道有哪些表
-    from app.models import user, product, conversation  # noqa: F401
+    from app.models import user, product, conversation, review  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

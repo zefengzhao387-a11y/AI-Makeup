@@ -12,8 +12,12 @@ Page({
   },
 
   onLoad() {
-    this.sessionId = 'wx-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    // 持久化 sessionId
+    let sid = wx.getStorageSync('lumina_agent_sid');
+    if (!sid) { sid = 'wx-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8); wx.setStorageSync('lumina_agent_sid', sid); }
+    this.sessionId = sid;
     this.loadProducts();
+    this.loadHistory();
   },
 
   async loadProducts() {
@@ -22,6 +26,23 @@ Page({
       const products = await app.request({ url: '/products?limit=200' });
       this.setData({ products });
     } catch (e) { console.warn('加载商品失败', e); }
+  },
+
+  async loadHistory() {
+    try {
+      const history = await app.request({ url: '/conversations?session_id=' + encodeURIComponent(this.sessionId) });
+      if (history && history.length > 0) {
+        const mapped = history.map(m => ({
+          role: m.role,
+          text: m.content,
+          recs: (m.meta_data?.recommended_products || []).map(p => ({
+            id: p.id, name: p.name,
+            route_path: p.route_path || '/products/' + p.id
+          }))
+        }));
+        this.setData({ messages: mapped });
+      }
+    } catch (e) { /* 无历史记录时保持默认欢迎语 */ }
   },
 
   onInput(e) { this.setData({ input: e.detail.value }); },

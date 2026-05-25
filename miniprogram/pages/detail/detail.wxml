@@ -1,4 +1,15 @@
 <view class="page" wx:if="{{!loading && product}}">
+  <!-- 顶部返回栏 -->
+  <view class="det-topbar">
+    <view class="det-back" bindtap="onBack">
+      <text class="det-back-arrow">←</text>
+      <text>返回</text>
+    </view>
+    <view class="det-actions">
+      <text class="det-action" bindtap="onTryOn">✨ AI试妆</text>
+    </view>
+  </view>
+
   <image class="det-img" src="{{product.image_url||'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=600&q=80'}}" mode="aspectFill" />
 
   <view class="det-body">
@@ -26,6 +37,45 @@
         <text wx:for="{{product.skin_tones}}" wx:key="*this" class="tag">肤色: {{item}}</text>
         <text wx:for="{{product.face_shapes}}" wx:key="*this" class="tag">脸型: {{item}}</text>
       </view>
+    </view>
+  </view>
+
+  <!-- 评论区块 -->
+  <view class="det-reviews">
+    <text class="det-rev-title">用户评价{{product.review_count ? ' (' + product.review_count + ')' : ''}}</text>
+    <view wx:if="{{product.rating}}" class="det-rev-avg">
+      <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" class="star {{item <= product.rating ? 'on' : ''}}">★</text>
+      <text class="sub" style="margin-left:8rpx">{{product.rating}}</text>
+    </view>
+
+    <!-- 提交评论 -->
+    <view class="det-rev-form" wx:if="{{app.isLoggedIn()}}">
+      <view class="det-rev-rate">
+        <text class="sub">我的评分：</text>
+        <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this"
+          class="star star-tap {{item <= myRating ? 'on' : ''}}"
+          bindtap="onRateTap" data-r="{{item}}">★</text>
+      </view>
+      <textarea class="det-rev-input" value="{{myText}}" placeholder="分享你的使用感受..."
+        bindinput="onRevInput" maxlength="500"/>
+      <button class="btn btn-p" style="margin-top:12rpx;width:100%" bindtap="onSubmitReview"
+        disabled="{{submitting || !myText}}">{{submitting ? '提交中...' : '发表评价'}}</button>
+    </view>
+    <view wx:else class="det-rev-login">
+      <text class="sub">请登录后发表评价</text>
+    </view>
+
+    <!-- 评论列表 -->
+    <view wx:if="{{reviews.length === 0}}" class="det-rev-empty">
+      <text class="sub">暂无评价，成为第一个评价的人吧</text>
+    </view>
+    <view wx:for="{{reviews}}" wx:key="id" class="det-rev-item">
+      <view class="det-rev-head">
+        <view class="det-rev-avatar">{{(item.nickname || '匿')[0]}}</view>
+        <text class="det-rev-nick">{{item.nickname || '匿名用户'}}</text>
+        <text wx:for="{{[1,2,3,4,5]}}" wx:key="*this" class="star {{index < item.rating ? 'on' : ''}}">★</text>
+      </view>
+      <text class="det-rev-text">{{item.content}}</text>
     </view>
   </view>
 

@@ -123,6 +123,26 @@ export async function agentChat(
   return r.json();
 }
 
+/* ─── Reviews (商品评论) ────────────────────────────── */
+export interface Review {
+  id: number; product_id: number; user_id: number | null;
+  nickname: string | null; rating: number; content: string; created_at: string;
+}
+export async function fetchReviews(productId: number): Promise<Review[]> {
+  const r = await fetch(`${BASE}/products/${productId}/reviews`);
+  if (!r.ok) throw await readError(r);
+  return r.json();
+}
+export async function addReview(productId: number, rating: number, content: string): Promise<Review> {
+  const r = await fetch(`${BASE}/products/${productId}/reviews`, {
+    method: 'POST',
+    headers: hdr(),
+    body: JSON.stringify({ rating, content }),
+  });
+  if (!r.ok) throw await readError(r);
+  return r.json();
+}
+
 /* ─── Image Edit ───────────────────────────────────── */
 export async function editImage(img: string, prompt: string, strength = 0.55): Promise<string> {
   const r = await fetch(`${BASE}/image-edit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ original_image: img, edit_prompt: prompt, strength }) });

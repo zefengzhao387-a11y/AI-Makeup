@@ -1,4 +1,11 @@
 .page { padding-bottom: 140rpx; }
+
+.det-topbar { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 30rpx; background: #fff; border-bottom: 2rpx solid #F0EDE8; position: sticky; top: 0; z-index: 50; }
+.det-back { display: flex; align-items: center; gap: 8rpx; font-size: 28rpx; color: #18181B; padding: 8rpx 0; }
+.det-back-arrow { font-size: 34rpx; font-weight: 600; color: #C8956C; }
+.det-actions { display: flex; gap: 20rpx; }
+.det-action { font-size: 26rpx; color: #C8956C; padding: 8rpx 16rpx; border: 2rpx solid #C8956C; border-radius: 40rpx; }
+
 .det-img { width: 100%; height: 680rpx; }
 .det-body { padding: 30rpx; }
 .det-brand { font-size: 24rpx; letter-spacing: 3rpx; text-transform: uppercase; display: block; margin-bottom: 8rpx; }
@@ -14,3 +21,21 @@
 .bot-fav { display: flex; flex-direction: column; align-items: center; min-width: 80rpx; }
 .bot-fav-txt { font-size: 20rpx; }
 .bot-cart { flex: 1; }
+
+/* Reviews */
+.det-reviews { padding: 30rpx; }
+.det-rev-title { font-size: 34rpx; font-weight: 700; display: block; margin-bottom: 12rpx; }
+.det-rev-avg { display: flex; align-items: center; margin-bottom: 24rpx; }
+.star { font-size: 36rpx; color: #F0EDE8; margin-right: 4rpx; }
+.star.on { color: #C8956C; }
+.star-tap { cursor: pointer; }
+.det-rev-form { background: #faf9f6; padding: 24rpx; border-radius: 16rpx; margin-bottom: 24rpx; }
+.det-rev-rate { display: flex; align-items: center; gap: 10rpx; margin-bottom: 16rpx; }
+.det-rev-input { width: 100%; min-height: 120rpx; background: #fff; border: 2rpx solid #F0EDE8; border-radius: 12rpx; padding: 16rpx; font-size: 28rpx; }
+.det-rev-login { text-align: center; padding: 30rpx 0; }
+.det-rev-empty { text-align: center; padding: 40rpx 0; }
+.det-rev-item { padding: 24rpx 0; border-bottom: 2rpx solid #F0EDE8; }
+.det-rev-head { display: flex; align-items: center; gap: 12rpx; margin-bottom: 12rpx; }
+.det-rev-avatar { width: 56rpx; height: 56rpx; border-radius: 50%; background: #E8C4A8; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24rpx; font-weight: 600; }
+.det-rev-nick { font-weight: 600; font-size: 28rpx; }
+.det-rev-text { font-size: 28rpx; line-height: 1.7; color: #18181B; padding-left: 68rpx; display: block; }

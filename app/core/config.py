@@ -16,7 +16,11 @@ class Settings(BaseSettings):
     # ── JWT ───────────────────────────────────────────────────
     JWT_EXPIRE_DAYS: int = 7
 
+    # Stability AI（图像编辑备用）
     STABILITY_API_KEY: str = ""
+
+    # Gemini AI（AI 试妆 / 图像编辑）
+    GEMINI_API_KEY: str = ""
 
     # DeepSeek LLM (AI 美妆顾问)
     DEEPSEEK_API_KEY: str = ""

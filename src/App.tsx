@@ -384,6 +384,7 @@ img{display:block;max-width:100%}
 .det-sec{margin-bottom:16px}
 .det-sec h4{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin-bottom:6px}
 .det-sec p{line-height:1.7;font-size:.88rem}
+.det-reviews{padding-top:32px;margin-top:32px;border-top:1px solid var(--border)}
 
 /* btn */
 .btn{padding:14px 28px;border-radius:40px;font-size:.84rem;font-weight:600;letter-spacing:.04em;transition:all .3s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
@@ -782,12 +783,44 @@ function Card({p,fav,onFav,onClick}: CardProps) {
 }
 
 // ── Detail ────────────────────────────────────────────────
+function ReviewStars({r,onRate}:{r:number;onRate?:(v:number)=>void}) {
+  return (
+    <span style={{display:'inline-flex',gap:2}}>
+      {[1,2,3,4,5].map(i=>(
+        <span key={i} onClick={()=>onRate?.(i)}
+          style={{cursor:onRate?'pointer':'default',fontSize:'1.1rem',userSelect:'none',
+            color:i<=r?'var(--accent)':'var(--border)',transition:'color .15s'}}>
+          ★
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function Detail({p,fav,onBack,onFav,onCart}:{p:api.Product;fav:boolean;onBack:()=>void;onFav:()=>void;onCart:()=>void}) {
   const t = useT();
   const [d,setD]=useState<api.Product|null>(null);
   const [added,setAdded]=useState(false);
+  const [reviews,setReviews]=useState<api.Review[]>([]);
+  const [myRating,setMyRating]=useState(5);
+  const [myText,setMyText]=useState('');
+  const [submitting,setSubmitting]=useState(false);
   useEffect(()=>{api.fetchProduct(p.id).then(setD).catch(()=>setD(p))},[p.id]);
+  useEffect(()=>{api.fetchReviews(p.id).then(setReviews).catch(()=>{})},[p.id]);
   const v=d||p;
+
+  const submitReview=async()=>{
+    if(!myText.trim()||submitting) return;
+    setSubmitting(true);
+    try{
+      const rvw = await api.addReview(v.id, myRating, myText.trim());
+      setReviews(prev=>[rvw,...prev]);
+      setMyText('');
+      setMyRating(5);
+    }catch(e:any){alert(e.message)}
+    finally{setSubmitting(false)}
+  };
+
   return (
     <div className="det">
       <div className="det-img"><img src={v.image_url||ph(v.id)} alt={v.name}/></div>
@@ -813,6 +846,55 @@ function Detail({p,fav,onBack,onFav,onCart}:{p:api.Product;fav:boolean;onBack:()
           <button className="btn btn-o" onClick={onFav}>{fav?t('detail.saved'):t('detail.save')}</button>
         </div>
       </div>
+
+      {/* ── 评论区块 ── */}
+      <div className="det-reviews">
+        <h3 style={{fontFamily:'var(--serif)',fontSize:'1.2rem',marginBottom:16}}>
+          用户评价{v.review_count?` (${v.review_count})`:''}
+          {v.rating?<span style={{marginLeft:8}}><ReviewStars r={Math.round(v.rating)}/> {v.rating}</span>:null}
+        </h3>
+
+        {/* 提交评论 */}
+        {api.isLoggedIn()?(
+          <div className="det-review-form" style={{marginBottom:20,padding:'16px 20px',background:'var(--bg)',borderRadius:'var(--r)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+              <span style={{fontSize:'.82rem',color:'var(--sub)'}}>我的评分：</span>
+              <ReviewStars r={myRating} onRate={setMyRating}/>
+            </div>
+            <textarea value={myText} onChange={e=>setMyText(e.target.value)}
+              placeholder="分享你的使用感受..."
+              style={{width:'100%',minHeight:70,padding:10,border:'1px solid var(--border)',borderRadius:8,fontSize:'.85rem',resize:'vertical',fontFamily:'inherit'}}/>
+            <button className="btn btn-p" style={{marginTop:8}} onClick={submitReview} disabled={submitting||!myText.trim()}>
+              {submitting?'提交中...':'发表评价'}
+            </button>
+          </div>
+        ):(<div style={{marginBottom:20,padding:16,textAlign:'center',color:'var(--sub)',fontSize:'.82rem'}}>
+          请登录后发表评价
+        </div>)}
+
+        {/* 评论列表 */}
+        {reviews.length===0?(
+          <div style={{textAlign:'center',color:'var(--sub)',padding:'24px 0',fontSize:'.85rem'}}>
+            暂无评价，成为第一个评价的人吧
+          </div>
+        ):(
+          reviews.map(r=>(
+            <div key={r.id} style={{padding:'14px 0',borderBottom:'1px solid var(--border)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                <div style={{width:28,height:28,borderRadius:'50%',background:'var(--accent2)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.75rem',fontWeight:600}}>
+                  {(r.nickname||'匿')[0]}
+                </div>
+                <span style={{fontWeight:600,fontSize:'.85rem'}}>{r.nickname||'匿名用户'}</span>
+                <ReviewStars r={r.rating}/>
+                <span style={{marginLeft:'auto',fontSize:'.7rem',color:'var(--sub)'}}>
+                  {new Date(r.created_at).toLocaleDateString()}
+                </span>
+              </div>
+              <p style={{fontSize:'.85rem',lineHeight:1.6,color:'var(--text)',marginLeft:36}}>{r.content}</p>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
@@ -828,9 +910,39 @@ function Agent({products,onView}:{products:api.Product[];onView:(p:api.Product)=
   ]);
   const [inp,setInp]=useState('');
   const [busy,setBusy]=useState(false);
-  const [sid]=useState(()=>crypto.randomUUID());
+  const [loaded,setLoaded]=useState(false);
+  // 持久化 sessionId：优先从 localStorage 读取，否则新建
+  const [sid]=useState(()=>{
+    const key = 'lumina_agent_sid';
+    let id = localStorage.getItem(key);
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem(key, id); }
+    return id;
+  });
   const end=useRef<HTMLDivElement>(null);
   useEffect(()=>{end.current?.scrollIntoView({behavior:'smooth'})},[msgs]);
+
+  // 进入页面时加载历史记录
+  useEffect(()=>{
+    if (loaded) return;
+    (async()=>{
+      try{
+        const history = await api.getHistory(sid);
+        if (history && history.length>0) {
+          const mapped:AMsg[] = history.map((m:any)=>({
+            role: m.role,
+            text: m.content,
+            recs: m.meta_data?.recommended_products?.map((p:any)=>({
+              id:p.id, name:p.name, route_path:p.route_path||`/products/${p.id}`
+            })) || undefined,
+          }));
+          setMsgs(mapped);
+        }
+      }catch(e){ /* 无历史记录时保持默认欢迎语 */ }
+      setLoaded(true);
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[sid]);
+
   // 语言切换时刷新欢迎语（如果用户还没发过消息）
   useEffect(()=>{
     setMsgs(prev=> prev.length===1 && prev[0].role==='assistant' ? [{role:'assistant',text:t('agent.greeting')}] : prev);
