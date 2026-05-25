@@ -104,6 +104,25 @@ export async function tryOnMakeup(
   return URL.createObjectURL(await r.blob());
 }
 
+/* ─── AI Agent (美妆顾问) ──────────────────────────── */
+export interface AgentChatResponse {
+  reply: string;
+  products: { id: number; name: string; reason: string }[];
+}
+export async function agentChat(
+  query: string,
+  sessionId: string,
+  history: { role: string; content: string }[] = [],
+): Promise<AgentChatResponse> {
+  const r = await fetch(`${BASE}/agent/chat`, {
+    method: 'POST',
+    headers: hdr(),
+    body: JSON.stringify({ query, session_id: sessionId, history }),
+  });
+  if (!r.ok) throw await readError(r);
+  return r.json();
+}
+
 /* ─── Image Edit ───────────────────────────────────── */
 export async function editImage(img: string, prompt: string, strength = 0.55): Promise<string> {
   const r = await fetch(`${BASE}/image-edit`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ original_image: img, edit_prompt: prompt, strength }) });

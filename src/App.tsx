@@ -845,9 +845,19 @@ function Agent({products,onView}:{products:api.Product[];onView:(p:api.Product)=
     try{
       const analysis=extractA(txt);
       await api.saveMsg(sid,'user',txt,{face_analysis:analysis});
-      const recs=matchP(txt,products);
-      const reply=genReply(txt,recs,t);
-      const recMeta=recs.slice(0,5).map(p=>({id:p.id,name:p.name,route_path:p.route_path||`/products/${p.id}`}));
+      // 构建最近对话历史传给后端
+      const history = msgs.slice(-10).map(m=>({role:m.role,content:m.text}));
+      let reply:string; let recMeta:{id:number;name:string;route_path:string}[];
+      try{
+        const res = await api.agentChat(txt, sid, history);
+        reply = res.reply;
+        recMeta = (res.products||[]).map(p=>({id:p.id,name:p.name,route_path:`/products/${p.id}`}));
+      }catch{
+        // API 失败时 fallback 到客户端关键词匹配
+        const recs=matchP(txt,products);
+        reply=genReply(txt,recs,t);
+        recMeta=recs.slice(0,5).map(p=>({id:p.id,name:p.name,route_path:p.route_path||`/products/${p.id}`}));
+      }
       await api.saveMsg(sid,'assistant',reply,{recommended_products:recMeta,face_analysis:analysis});
       setMsgs(p=>[...p,{role:'assistant',text:reply,recs:recMeta}]);
     }catch(e:any){

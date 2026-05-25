@@ -41,10 +41,29 @@ Page({
         data: { session_id: this.sessionId, role: 'user', content: text, meta_data: { face_analysis: analysis } }
       });
 
-      // 客户端 RAG 匹配
-      const recs = this.matchProducts(text);
-      const reply = this.generateReply(text, recs);
-      const recMeta = recs.slice(0, 5).map(p => ({ id: p.id, name: p.name, route_path: p.route_path || '/products/' + p.id }));
+      // 调用后端 AI 美妆顾问 API
+      let reply; let recMeta;
+      try {
+        const history = this.data.messages.slice(-10).map(m => ({ role: m.role, content: m.text }));
+        const res = await app.request({
+          url: '/agent/chat', method: 'POST',
+          data: { query: text, session_id: this.sessionId, history }
+        });
+        reply = res.reply;
+        recMeta = (res.products || []).map(p => ({
+          id: p.id, name: p.name,
+          route_path: '/products/' + p.id
+        }));
+      } catch (apiErr) {
+        // API 失败时 fallback 到客户端关键词匹配
+        console.warn('Agent API 失败，使用客户端 fallback:', apiErr);
+        const recs = this.matchProducts(text);
+        reply = this.generateReply(text, recs);
+        recMeta = recs.slice(0, 5).map(p => ({
+          id: p.id, name: p.name,
+          route_path: p.route_path || '/products/' + p.id
+        }));
+      }
 
       // 保存 AI 回复
       await app.request({

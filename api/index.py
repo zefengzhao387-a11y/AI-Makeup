@@ -83,11 +83,12 @@ app.add_exception_handler(Exception, unhandled_exception_handler)
 
 
 # ── 路由注册 ────────────────────────────────────────────────
-from app.routers import auth, products, conversations, image_edit, makeup
+from app.routers import auth, products, conversations, image_edit, makeup, agent
 
 app.include_router(auth.router,          prefix="/api/auth",          tags=["认证"])
 app.include_router(products.router,      prefix="/api/products",      tags=["商品"])
 app.include_router(conversations.router, prefix="/api/conversations", tags=["对话"])
+app.include_router(agent.router,         prefix="/api/agent",         tags=["AI 顾问"])
 app.include_router(makeup.router,        prefix="/api/makeup",        tags=["化妆 AI"])
 app.include_router(image_edit.router,    prefix="/api",               tags=["图像编辑"])
 
