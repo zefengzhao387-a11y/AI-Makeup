@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-please-use-a-long-random-string-in-production"
 
     DATABASE_URL: str = "sqlite+aiosqlite:///./dev.db"
+    POSTGRES_URL: str = ""
+    PRISMA_DATABASE_URL: str = ""
 
     # ── JWT ───────────────────────────────────────────────────
     JWT_EXPIRE_DAYS: int = 7
@@ -19,6 +21,17 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "*"
 
     @property
+    def resolved_database_url(self) -> str:
+        """Vercel + Prisma 通常只注入 POSTGRES_URL，需兼容读取"""
+        if self.DATABASE_URL.startswith(("postgres://", "postgresql")):
+            return self.DATABASE_URL
+        if self.POSTGRES_URL:
+            return self.POSTGRES_URL
+        if self.PRISMA_DATABASE_URL:
+            return self.PRISMA_DATABASE_URL
+        return self.DATABASE_URL
+
+    @property
     def database_url(self) -> str:
         url, _ = self.database_url_and_connect_args
         return url
@@ -26,7 +39,7 @@ class Settings(BaseSettings):
     @property
     def database_url_and_connect_args(self) -> Tuple[str, Dict[str, Any]]:
         """把 Vercel / Prisma 的 postgres:// 转为 SQLAlchemy asyncpg 可用格式"""
-        url = self.DATABASE_URL
+        url = self.resolved_database_url
         connect_args: Dict[str, Any] = {}
 
         if url.startswith("postgres://"):

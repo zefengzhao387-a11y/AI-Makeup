@@ -1,6 +1,7 @@
 # app/core/database.py
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import NullPool
 import logging
 
 from app.core.config import settings
@@ -8,9 +9,13 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-# SQLite 不能用连接池参数；非 SQLite 则启用基础连接池
+# SQLite 不能用连接池参数；Serverless 用 NullPool 避免连接泄漏
 _engine_kwargs = {"echo": False}
-if not settings.database_url.startswith("sqlite"):
+if settings.database_url.startswith("sqlite"):
+    pass
+elif settings.is_serverless:
+    _engine_kwargs["poolclass"] = NullPool
+else:
     _engine_kwargs.update({
         "pool_size": 5,
         "max_overflow": 10,

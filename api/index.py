@@ -105,7 +105,24 @@ async def root():
 
 @app.get("/health", tags=["root"])
 async def health():
-    return {"status": "ok", "env": settings.APP_ENV}
+    db_ok = False
+    db_error = None
+    try:
+        from sqlalchemy import text
+        from app.core.database import engine
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        db_ok = True
+    except Exception as e:
+        db_error = str(e)[:200]
+        logger.warning(f"health db check failed: {e}")
+    return {
+        "status": "ok" if db_ok or settings.database_url.startswith("sqlite") else "degraded",
+        "env": settings.APP_ENV,
+        "database": "ok" if db_ok else "error",
+        "database_error": db_error,
+        "database_source": "postgres" if "postgres" in settings.resolved_database_url else "sqlite",
+    }
 
 
 # ── Vercel 部署需要：把 ASGI 应用包成 Lambda handler ────────
