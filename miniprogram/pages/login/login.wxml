@@ -1,0 +1,32 @@
+<view class="page">
+  <view class="auth-card">
+    <text class="auth-title serif">{{mode === 'login' ? '欢迎回来' : '创建账号'}}</text>
+    <text class="auth-sub sub">{{mode === 'login' ? '登录你的美妆之旅' : '加入 Lumina Beauty'}}</text>
+
+    <view wx:if="{{mode === 'register'}}" class="fg">
+      <text class="fg-label sub">昵称</text>
+      <input class="fg-input" value="{{nickname}}" bindinput="onNicknameInput" placeholder="你的昵称" />
+    </view>
+
+    <view class="fg">
+      <text class="fg-label sub">用户名</text>
+      <input class="fg-input" value="{{username}}" bindinput="onUsernameInput" placeholder="输入用户名" />
+    </view>
+
+    <view class="fg">
+      <text class="fg-label sub">密码</text>
+      <input class="fg-input" value="{{password}}" bindinput="onPasswordInput" placeholder="至少 8 位" password bindconfirm="onSubmit" />
+    </view>
+
+    <text wx:if="{{error}}" class="error-text">{{error}}</text>
+
+    <button class="btn btn-p submit-btn" bindtap="onSubmit" disabled="{{loading}}">
+      {{loading ? '请稍候…' : (mode === 'login' ? '登录' : '注册')}}
+    </button>
+
+    <view class="switch-link" bindtap="toggleMode">
+      <text class="sub">{{mode === 'login' ? '没有账号？' : '已有账号？'}}</text>
+      <text class="accent fw6">{{mode === 'login' ? '去注册' : '去登录'}}</text>
+    </view>
+  </view>
+</view>

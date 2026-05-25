@@ -1,0 +1,33 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/detail/detail",
+    "pages/agent/agent",
+    "pages/tryOn/tryOn",
+    "pages/cart/cart",
+    "pages/favorites/favorites",
+    "pages/profile/profile",
+    "pages/login/login"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#FAF9F6",
+    "navigationBarTitleText": "Lumina Beauty",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#FAF9F6"
+  },
+  "tabBar": {
+    "color": "#9CA3AF",
+    "selectedColor": "#C8956C",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "首页", "iconPath": "static/tab-home.png", "selectedIconPath": "static/tab-home-on.png" },
+      { "pagePath": "pages/agent/agent", "text": "AI顾问", "iconPath": "static/tab-ai.png", "selectedIconPath": "static/tab-ai-on.png" },
+      { "pagePath": "pages/cart/cart", "text": "购物车", "iconPath": "static/tab-cart.png", "selectedIconPath": "static/tab-cart-on.png" },
+      { "pagePath": "pages/profile/profile", "text": "我的", "iconPath": "static/tab-me.png", "selectedIconPath": "static/tab-me-on.png" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

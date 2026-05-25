@@ -1,0 +1,29 @@
+<view class="page">
+  <!-- Hero -->
+  <view class="hero">
+    <text class="hero-title serif">Discover Your\nPerfect Beauty</text>
+    <text class="hero-sub sub">AI-powered recommendations, tailored for you.</text>
+    <navigator url="/pages/agent/agent" open-type="switchTab" class="hero-btn btn btn-p">Talk to AI Advisor →</navigator>
+  </view>
+
+  <!-- Category Tabs -->
+  <scroll-view scroll-x class="tabs-wrap">
+    <view wx:for="{{categories}}" wx:key="*this" class="tab {{activeCat===item?'on':''}}" data-cat="{{item}}" bindtap="onCatTap">{{item}}</view>
+  </scroll-view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" style="text-align:center;padding:80rpx"><text class="sub">Loading…</text></view>
+
+  <!-- Product Grid -->
+  <view wx:else class="grid">
+    <view wx:for="{{products}}" wx:key="id" wx:if="{{activeCat==='All'||item.category===activeCat}}" class="pcard card" data-id="{{item.id}}" bindtap="onProductTap">
+      <image class="pcard-img" src="{{item.image_url||'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&q=80'}}" mode="aspectFill" lazy-load />
+      <view class="pcard-body">
+        <text class="pcard-brand sub" wx:if="{{item.brand}}">{{item.brand}}</text>
+        <text class="pcard-name serif fw6">{{item.name}}</text>
+        <text class="pcard-price accent fw6">¥{{item.price||'—'}}</text>
+        <view class="pcard-tags"><text wx:for="{{item.tags}}" wx:for-item="t" wx:key="*this" class="tag">{{t}}</text></view>
+      </view>
+    </view>
+  </view>
+</view>

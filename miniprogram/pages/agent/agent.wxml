@@ -1,0 +1,30 @@
+<view class="page">
+  <view class="ag-head">
+    <text class="ag-title serif">AI 美妆顾问</text>
+    <text class="ag-sub sub">告诉我你的肤色、脸型或想要的风格</text>
+  </view>
+
+  <!-- 消息列表 -->
+  <view class="msgs">
+    <view wx:for="{{messages}}" wx:key="index" class="msg {{item.role === 'user' ? 'msg-u' : 'msg-a'}}">
+      <text class="msg-text">{{item.text}}</text>
+      <!-- 推荐商品卡片 -->
+      <view wx:if="{{item.recs && item.recs.length}}" class="recs">
+        <view wx:for="{{item.recs}}" wx:for-item="rec" wx:key="id" class="rec-card" data-id="{{rec.id}}" bindtap="onRecTap">
+          <text>🛍 {{rec.name}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 正在输入 -->
+    <view wx:if="{{sending}}" class="msg msg-a">
+      <text class="msg-text sub">思考中...</text>
+    </view>
+  </view>
+
+  <!-- 输入栏 -->
+  <view class="input-bar">
+    <input class="input-field" value="{{input}}" bindinput="onInput" bindconfirm="onSend" placeholder="例如：我是暖色调肤色，圆脸…" confirm-type="send" disabled="{{sending}}" />
+    <button class="send-btn btn btn-p" bindtap="onSend" disabled="{{sending || !input}}">发送</button>
+  </view>
+</view>

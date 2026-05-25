@@ -1,0 +1,35 @@
+<view class="page">
+  <view class="head"><text class="sec-title serif">购物车</text></view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!cart.length}}" class="empty">
+    <text class="title">购物车是空的</text>
+    <text class="desc">去首页逛逛吧！</text>
+  </view>
+
+  <!-- 商品列表 -->
+  <view wx:else>
+    <view wx:for="{{cart}}" wx:key="id" class="ci">
+      <image class="ci-img" src="{{item.image_url || 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300&q=80'}}" mode="aspectFill" data-id="{{item.id}}" bindtap="onItemTap" />
+      <view class="ci-info">
+        <text class="ci-name serif fw6">{{item.name}}</text>
+        <text class="ci-price accent fw6">¥{{item.price || '—'}}</text>
+        <view class="ci-qty">
+          <view class="qty-btn" data-id="{{item.id}}" bindtap="onMinus"><text>−</text></view>
+          <text class="qty-num fw6">{{item.qty}}</text>
+          <view class="qty-btn" data-id="{{item.id}}" bindtap="onPlus"><text>+</text></view>
+          <text class="ci-remove sub" data-id="{{item.id}}" bindtap="onRemove">删除</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 总计 -->
+    <view class="summary">
+      <view class="summary-row">
+        <text class="fw6">合计</text>
+        <text class="accent fw6" style="font-size:36rpx">¥{{total}}</text>
+      </view>
+      <button class="btn btn-a summary-btn" bindtap="onCheckout">去结算</button>
+    </view>
+  </view>
+</view>

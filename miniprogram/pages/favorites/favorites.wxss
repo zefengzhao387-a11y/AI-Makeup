@@ -1,0 +1,8 @@
+.page { padding: 24rpx; }
+.grid { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.pcard { width: calc(50% - 8rpx); }
+.pcard-img { width: 100%; height: 380rpx; }
+.pcard-body { padding: 18rpx; }
+.pcard-brand { font-size: 20rpx; letter-spacing: 2rpx; text-transform: uppercase; display: block; margin-bottom: 4rpx; }
+.pcard-name { font-size: 26rpx; display: block; margin-bottom: 6rpx; line-height: 1.3; }
+.pcard-price { font-size: 28rpx; display: block; }

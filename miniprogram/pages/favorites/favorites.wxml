@@ -1,0 +1,19 @@
+<view class="page">
+  <view wx:if="{{loading}}" style="text-align:center;padding:100rpx"><text class="sub">Loading…</text></view>
+
+  <view wx:elif="{{!products.length}}" class="empty">
+    <text class="title">{{mode === 'favorites' ? '还没有收藏' : '该分类暂无商品'}}</text>
+    <text class="desc">{{mode === 'favorites' ? '去浏览商品，点击爱心收藏吧' : ''}}</text>
+  </view>
+
+  <view wx:else class="grid">
+    <view wx:for="{{products}}" wx:key="id" class="pcard card" data-id="{{item.id}}" bindtap="onProductTap">
+      <image class="pcard-img" src="{{item.image_url || 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&q=80'}}" mode="aspectFill" lazy-load />
+      <view class="pcard-body">
+        <text class="pcard-brand sub" wx:if="{{item.brand}}">{{item.brand}}</text>
+        <text class="pcard-name serif fw6">{{item.name}}</text>
+        <text class="pcard-price accent fw6">¥{{item.price || '—'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

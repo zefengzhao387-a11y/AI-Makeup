@@ -1,0 +1,16 @@
+.page { padding-bottom: 140rpx; }
+.det-img { width: 100%; height: 680rpx; }
+.det-body { padding: 30rpx; }
+.det-brand { font-size: 24rpx; letter-spacing: 3rpx; text-transform: uppercase; display: block; margin-bottom: 8rpx; }
+.det-name { font-size: 40rpx; font-weight: 700; display: block; line-height: 1.25; margin-bottom: 16rpx; }
+.det-price { font-size: 36rpx; display: block; margin-bottom: 24rpx; }
+.det-sec { margin-bottom: 24rpx; }
+.det-desc { font-size: 28rpx; line-height: 1.7; display: block; }
+.det-label { font-size: 22rpx; font-weight: 600; letter-spacing: 2rpx; text-transform: uppercase; display: block; margin-bottom: 8rpx; }
+.det-text { font-size: 26rpx; line-height: 1.7; display: block; }
+.det-tags { margin-top: 8rpx; }
+
+.bot-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 2rpx solid #F0EDE8; padding: 20rpx 30rpx; display: flex; align-items: center; gap: 20rpx; z-index: 100; padding-bottom: calc(20rpx + env(safe-area-inset-bottom)); }
+.bot-fav { display: flex; flex-direction: column; align-items: center; min-width: 80rpx; }
+.bot-fav-txt { font-size: 20rpx; }
+.bot-cart { flex: 1; }

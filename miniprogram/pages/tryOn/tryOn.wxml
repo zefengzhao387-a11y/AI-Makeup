@@ -1,0 +1,38 @@
+<view class="page">
+  <view class="to-head">
+    <text class="to-title serif">AI 试妆</text>
+    <text class="to-sub sub">上传照片，描述你想要的妆容效果</text>
+  </view>
+
+  <!-- 未上传 -->
+  <view wx:if="{{!original}}" class="upload-area" bindtap="onChooseImage">
+    <text style="font-size:56rpx;margin-bottom:16rpx">📸</text>
+    <text class="fw6">点击上传照片</text>
+    <text class="sub" style="font-size:24rpx;margin-top:8rpx">JPEG / PNG，从相册或拍照</text>
+  </view>
+
+  <!-- 已上传 -->
+  <view wx:else>
+    <view class="preview">
+      <view class="preview-col">
+        <text class="preview-label sub">原图</text>
+        <image class="preview-img" src="{{original}}" mode="aspectFill" />
+      </view>
+      <view class="preview-col">
+        <text class="preview-label sub">效果</text>
+        <image wx:if="{{result}}" class="preview-img" src="{{result}}" mode="aspectFill" />
+        <view wx:else class="preview-placeholder"><text class="sub">效果将显示在这里</text></view>
+      </view>
+    </view>
+
+    <view class="action-bar">
+      <input class="prompt-input" value="{{prompt}}" bindinput="onInput" bindconfirm="onApply" placeholder="例如：涂珊瑚色口红，自然妆容" />
+      <button class="btn btn-p apply-btn" bindtap="onApply" disabled="{{loading || !prompt}}">
+        {{loading ? '处理中…' : '应用'}}
+      </button>
+    </view>
+
+    <text wx:if="{{error}}" class="error-text">{{error}}</text>
+    <view class="reset-link" bindtap="onReset"><text class="sub">换一张照片</text></view>
+  </view>
+</view>
