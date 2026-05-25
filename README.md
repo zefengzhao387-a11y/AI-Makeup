@@ -75,6 +75,34 @@ DATABASE_URL=postgresql+asyncpg://user:pass@host/dbname
 
 并在 `requirements.txt` 取消注释 `asyncpg`。
 
+### Prisma Postgres 建表（你截图里的那个库）
+
+**Prisma 控制台不能手动点「建表」**，原因有两点：
+
+1. 你当前在 **「代理工具」** 页 —— 那是 Pro 版 AI 对话功能，不是建表界面
+2. 本项目用的是 **SQLAlchemy**，表结构在代码里（`app/models/`），不是 Prisma Schema
+
+**正确做法：用脚本连上 Postgres 自动建表**
+
+1. Vercel → 你的项目 → **Storage** → 点进 `prisma-postgres-xxx`
+2. 点 **Connect Project** / **.env.local**，复制 `POSTGRES_URL` 或 `DATABASE_URL`
+3. 粘贴到本地 `.env`：
+
+```env
+DATABASE_URL=postgres://xxxx:xxxx@xxxx.aws.neon.tech/verceldb?sslmode=require
+```
+
+4. 本地执行一次：
+
+```bash
+pip install -r requirements.txt
+python scripts/init_db.py
+```
+
+5. 回到 Prisma 控制台 → 左侧 **「结构」** 或 **「数据编辑器」**，就能看到 `users`、`products`、`conversations` 等表
+
+Vercel 环境变量里也要加同一个 `DATABASE_URL`，部署后 API 才能读写数据库。
+
 ### 4. 部署完成后
 
 - 网站：`https://你的项目.vercel.app`

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 # SQLite 不能用连接池参数；非 SQLite 则启用基础连接池
 _engine_kwargs = {"echo": False}
-if not settings.DATABASE_URL.startswith("sqlite"):
+if not settings.database_url.startswith("sqlite"):
     _engine_kwargs.update({
         "pool_size": 5,
         "max_overflow": 10,
@@ -18,7 +18,11 @@ if not settings.DATABASE_URL.startswith("sqlite"):
         "pool_recycle": 1800,
     })
 
-engine = create_async_engine(settings.DATABASE_URL, **_engine_kwargs)
+engine = create_async_engine(
+    settings.database_url,
+    connect_args=settings.database_url_and_connect_args[1],
+    **_engine_kwargs,
+)
 
 AsyncSessionLocal = async_sessionmaker(
     engine,
