@@ -1,14 +1,16 @@
 const app = getApp();
 
 Page({
-  data: { original: '', result: '', prompt: '', style: '', styles: [], loading: false, error: '' },
+  data: { original: '', result: '', prompt: '', style: '', styles: [], stylesLoading: true, loading: false, error: '' },
 
   onLoad() {
     wx.request({
       url: app.globalData.apiBase + '/makeup/styles',
       success: (r) => {
-        if (r.statusCode >= 200 && r.statusCode < 300) this.setData({ styles: r.data || [] });
+        if (r.statusCode >= 200 && r.statusCode < 300) this.setData({ styles: r.data || [], stylesLoading: false });
+        else this.setData({ stylesLoading: false });
       },
+      fail: () => this.setData({ stylesLoading: false }),
     });
   },
 

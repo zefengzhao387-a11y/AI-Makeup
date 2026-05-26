@@ -1,9 +1,9 @@
 <view class="page">
   <!-- Hero -->
   <view class="hero">
-    <text class="hero-title serif">Discover Your\nPerfect Beauty</text>
-    <text class="hero-sub sub">AI-powered recommendations, tailored for you.</text>
-    <navigator url="/pages/agent/agent" open-type="switchTab" class="hero-btn btn btn-p">Talk to AI Advisor →</navigator>
+    <text class="hero-title serif">发现你的\n完美之美</text>
+    <text class="hero-sub sub">基于 AI 的个性化推荐，量身定制适合你的美妆产品。</text>
+    <navigator url="/pages/agent/agent" open-type="switchTab" class="hero-btn btn btn-p">与 AI 顾问对话 →</navigator>
   </view>
 
   <!-- Category Tabs -->
@@ -12,7 +12,10 @@
   </scroll-view>
 
   <!-- Loading -->
-  <view wx:if="{{loading}}" style="text-align:center;padding:80rpx"><text class="sub">Loading…</text></view>
+  <view wx:if="{{loading}}" style="text-align:center;padding:80rpx"><text class="sub">加载中…</text></view>
+
+  <!-- Error -->
+  <view wx:elif="{{loadError}}" style="text-align:center;padding:80rpx"><text class="sub">{{loadError}}</text></view>
 
   <!-- Product Grid -->
   <view wx:else class="grid">

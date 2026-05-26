@@ -2,20 +2,19 @@ const app = getApp();
 Page({
   data: {
     products: [], categories: ['All','Lips','Face','Eyes','Skincare'],
-    activeCat: 'All', loading: true
+    activeCat: 'All', loading: true, loadError: ''
   },
   onShow() {
     if (!app.isLoggedIn()) { wx.navigateTo({ url: '/pages/login/login' }); return; }
     this.loadProducts();
   },
   async loadProducts() {
-    this.setData({ loading: true });
+    this.setData({ loading: true, loadError: '' });
     try {
       const products = await app.request({ url: '/products?limit=200' });
       this.setData({ products, loading: false });
     } catch (e) {
-      wx.showToast({ title: e.message, icon: 'none' });
-      this.setData({ loading: false });
+      this.setData({ loading: false, loadError: '加载失败：' + (e.message || '网络错误') });
     }
   },
   onCatTap(e) { this.setData({ activeCat: e.currentTarget.dataset.cat }); },

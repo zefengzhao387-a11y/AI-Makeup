@@ -2,13 +2,12 @@ const app = getApp();
 
 Page({
   data: {
-    messages: [
-      { role: 'assistant', text: '你好！我是你的专属美妆顾问 💄\n\n告诉我你的肤色、脸型，或者你想要什么效果，我来为你推荐最合适的产品！' }
-    ],
+    messages: [],
     input: '',
     sending: false,
     products: [],
     sessionId: '',
+    historyLoading: true,
   },
 
   onLoad() {
@@ -40,9 +39,14 @@ Page({
             route_path: p.route_path || '/products/' + p.id
           }))
         }));
-        this.setData({ messages: mapped });
+        this.setData({ messages: mapped, historyLoading: false });
+        return;
       }
     } catch (e) { /* 无历史记录时保持默认欢迎语 */ }
+    this.setData({
+      messages: [{ role: 'assistant', text: '你好！我是你的专属美妆顾问 💄\n\n告诉我你的肤色、脸型，或者你想要什么效果，我来为你推荐最合适的产品！' }],
+      historyLoading: false
+    });
   },
 
   onInput(e) { this.setData({ input: e.detail.value }); },

@@ -16,11 +16,13 @@ class Settings(BaseSettings):
     # ── JWT ───────────────────────────────────────────────────
     JWT_EXPIRE_DAYS: int = 7
 
-    # Stability AI（图像编辑备用）
-    STABILITY_API_KEY: str = ""
+    # 硅基流动 SiliconFlow（AI 试妆 / 图像编辑）
+    SILICONFLOW_API_KEY: str = ""
 
-    # Gemini AI（AI 试妆 / 图像编辑）
+    # 备用（已弃用）
+    TOGETHER_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
+    STABILITY_API_KEY: str = ""
 
     # DeepSeek LLM (AI 美妆顾问)
     DEEPSEEK_API_KEY: str = ""

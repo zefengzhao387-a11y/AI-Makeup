@@ -25,7 +25,9 @@
       </view>
     </view>
 
-    <view class="style-row" wx:if="{{styles.length}}">
+    <view wx:if="{{stylesLoading}}" style="text-align:center;padding:20rpx"><text class="sub">加载风格中…</text></view>
+
+    <view class="style-row" wx:elif="{{styles.length}}">
       <text class="preview-label sub">快速风格</text>
       <view class="style-chips">
         <view wx:for="{{styles}}" wx:key="id" class="style-chip {{style === item.id ? 'on' : ''}}" data-id="{{item.id}}" bindtap="onStyleTap">{{item.name}}</view>

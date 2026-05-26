@@ -10,7 +10,7 @@
   <view wx:else>
     <view class="pf-card">
       <view class="pf-avatar"><text class="pf-av-text">L</text></view>
-      <text class="pf-name serif fw6">Beauty Lover</text>
+      <text class="pf-name serif fw6">美妆爱好者</text>
       <text class="pf-id sub">User #{{userId}}</text>
     </view>
 

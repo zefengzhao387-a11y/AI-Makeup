@@ -39,7 +39,7 @@ async def agent_chat_endpoint(
     except AppException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI 顾问出错: {str(e)[:200]}")
+        raise HTTPException(status_code=500, detail="AI 顾问服务暂时不可用，请稍后重试")
 
     return AgentChatResponse(
         reply=reply,

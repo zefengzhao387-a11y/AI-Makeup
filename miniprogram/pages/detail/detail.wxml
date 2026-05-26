@@ -89,4 +89,4 @@
   </view>
 </view>
 
-<view wx:if="{{loading}}" style="text-align:center;padding:120rpx"><text class="sub">Loading…</text></view>
+<view wx:if="{{loading}}" style="text-align:center;padding:120rpx"><text class="sub">加载中…</text></view>

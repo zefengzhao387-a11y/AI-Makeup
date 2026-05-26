@@ -6,10 +6,12 @@ POST /api/image-edit          上传图片 + 编辑指令，返回 PNG
 """
 from fastapi import APIRouter
 from fastapi.responses import Response
+from fastapi.exceptions import HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
 
 from app.services.image_edit_service import ImageEditService
+from app.core.exceptions import AppException
 
 router = APIRouter()
 
@@ -22,13 +24,18 @@ class ImageEditRequest(BaseModel):
 
 @router.post(
     "/image-edit",
-    summary="AI 图像编辑（Stability AI SD3）",
+    summary="AI 图像编辑",
     responses={200: {"content": {"image/png": {}}, "description": "编辑后的 PNG 图像"}},
 )
 async def image_edit(body: ImageEditRequest):
-    png = await ImageEditService.edit(
-        original_image=body.original_image,
-        edit_prompt=body.edit_prompt,
-        strength=body.strength,
-    )
-    return Response(content=png, media_type="image/png", headers={"Cache-Control": "no-store"})
+    try:
+        png = await ImageEditService.edit(
+            original_image=body.original_image,
+            edit_prompt=body.edit_prompt,
+            strength=body.strength,
+        )
+        return Response(content=png, media_type="image/png", headers={"Cache-Control": "no-store"})
+    except AppException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="图像编辑服务暂时不可用，请稍后重试")

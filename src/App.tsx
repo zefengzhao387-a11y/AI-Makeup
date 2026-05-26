@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as api from './services/api';
+import { useLang, useT, tCat, makeupStyleLabel } from './i18n';
+import { LangSwitcher } from './i18n/LangSwitcher';
 
 // ── Types ─────────────────────────────────────────────────
 type Page = 'home'|'category'|'detail'|'agent'|'tryOn'|'cart'|'favs'|'profile'|'login'|'register';
@@ -28,271 +30,6 @@ const PH = [
 ];
 const ph = (id: number) => PH[id % PH.length];
 const CATS = ['All','Lips','Face','Eyes','Skincare'];
-
-// ══════════════════════════════════════════════════════════
-//  I18N — 内置中英文切换（不引入额外依赖）
-// ══════════════════════════════════════════════════════════
-type Lang = 'en' | 'zh';
-
-const I18N: Record<Lang, Record<string, string>> = {
-  en: {
-    // nav
-    'nav.home': 'Home',
-    'nav.advisor': 'AI Advisor',
-    'nav.tryon': 'Try On',
-    'nav.favorites': 'Favorites',
-    // categories
-    'cat.All': 'All',
-    'cat.Lips': 'Lips',
-    'cat.Face': 'Face',
-    'cat.Eyes': 'Eyes',
-    'cat.Skincare': 'Skincare',
-    // hero
-    'hero.title1': 'Discover Your',
-    'hero.title2': 'Perfect Beauty',
-    'hero.desc': 'AI-powered recommendations tailored to your unique skin tone, face shape, and personal style.',
-    'hero.cta': 'Talk to AI Advisor →',
-    // home / category
-    'home.newArrivals': 'New Arrivals',
-    'home.loading': 'Loading…',
-    'home.seeAll': 'See All →',
-    'home.backHome': '← Back to Home',
-    'home.allProducts': '— All Products',
-    'home.empty': 'No products here yet',
-    // favorites
-    'favs.title': 'My Favorites',
-    'favs.empty': 'No favorites yet',
-    'favs.emptyHint': 'Tap the heart on products to save them here.',
-    'favs.browse': 'Browse Products',
-    // profile
-    'profile.name': 'Beauty Lover',
-    'profile.dev': 'Developer · admin',
-    'profile.user': 'User #',
-    'profile.myFavs': 'My Favorites',
-    'profile.myCart': 'My Cart',
-    'profile.signOut': 'Sign Out',
-    // detail
-    'detail.back': '← Back',
-    'detail.ingredients': 'Ingredients',
-    'detail.howToUse': 'How to Use',
-    'detail.recommendedFor': 'Recommended For',
-    'detail.skinTag': 'Skin',
-    'detail.faceTag': 'Face',
-    'detail.addCart': 'Add to Cart',
-    'detail.added': '✓ Added to Cart',
-    'detail.save': '🤍 Save',
-    'detail.saved': '❤️ Saved',
-    // agent
-    'agent.title': 'AI Beauty Advisor',
-    'agent.subtitle': 'Tell me about your features or what look you want',
-    'agent.greeting': "Hi! I'm your personal beauty advisor 💄\n\nTell me about your skin tone, face shape, or what you're looking for — I'll find the perfect products for you!",
-    'agent.placeholder': 'e.g. I have warm-toned skin and an oval face…',
-    'agent.send': 'Send',
-    'agent.thinking': 'Thinking',
-    'agent.askMore': "I'd love to help! Could you tell me more about:\n• Your skin tone (cool, warm, light, deep)\n• Your face shape (oval, round, square, heart)\n• What product type you want (lipstick, foundation, mascara, skincare)",
-    'agent.introDefault': 'Based on your features, here are my recommendations:\n\n',
-    'agent.introCool': 'For your cool-toned complexion:\n\n',
-    'agent.introWarm': 'For your warm-toned skin, these would look gorgeous:\n\n',
-    'agent.introOval': 'With your balanced oval face shape, you have many options:\n\n',
-    'agent.suits': 'Suits {tones} tones.',
-    'agent.outro': '\n\nClick any product to see details! Want me to narrow it down?',
-    'agent.error': 'Sorry, something went wrong: {msg}',
-    // try-on
-    'tryon.title': 'AI Try-On',
-    'tryon.desc': 'Upload a photo, describe the look, and our AI will transform it.',
-    'tryon.upload.title': 'Click to upload your photo',
-    'tryon.upload.hint': 'JPEG or PNG · max 15 MB',
-    'tryon.original': 'Original',
-    'tryon.result': 'Result',
-    'tryon.resultEmpty': 'Result will appear here',
-    'tryon.styles': 'Quick styles',
-    'tryon.promptPlaceholder': 'e.g. Apply a coral lipstick, natural makeup',
-    'tryon.apply': 'Apply',
-    'tryon.processing': 'Processing…',
-    'tryon.changePhoto': 'Upload a different photo',
-    // cart
-    'cart.continue': '← Continue Shopping',
-    'cart.title': 'My Cart',
-    'cart.empty': 'Your cart is empty',
-    'cart.emptyHint': 'Add some products to get started!',
-    'cart.browse': 'Browse Products',
-    'cart.remove': 'Remove',
-    'cart.total': 'Total',
-    'cart.checkout': 'Proceed to Checkout',
-    // auth
-    'auth.welcome': 'Welcome Back',
-    'auth.createAccount': 'Create Account',
-    'auth.signinTagline': 'Sign in to your beauty journey',
-    'auth.signupTagline': 'Join Lumina Beauty today',
-    'auth.nickname': 'Nickname',
-    'auth.nicknamePh': 'What should we call you?',
-    'auth.username': 'Username',
-    'auth.usernamePh': 'Enter username (3-50 chars)',
-    'auth.password': 'Password',
-    'auth.passwordPh': 'Min 8 characters',
-    'auth.pleaseWait': 'Please wait…',
-    'auth.signIn': 'Sign In',
-    'auth.noAccount': "Don't have an account? ",
-    'auth.hasAccount': 'Already have an account? ',
-    'auth.signUp': 'Sign up',
-    'auth.signInLink': 'Sign in',
-    'auth.devQuick': '🚀 Enter as developer (admin / skip signup)',
-    'auth.devHint': '💡 DEV mode: admin credentials pre-filled. Will not appear in production build.',
-    'auth.fieldErrors': 'Validation details:',
-    'auth.devLoginFailed': 'Developer login failed: ',
-    'auth.backendDown': 'Backend not running?',
-    // language switcher
-    'lang.switch': '中文',
-    // footer
-    'footer.copy': '© 2025 Lumina Beauty AI · Crafted with intelligence',
-  },
-  zh: {
-    // nav
-    'nav.home': '首页',
-    'nav.advisor': 'AI 顾问',
-    'nav.tryon': 'AI 试妆',
-    'nav.favorites': '收藏',
-    // categories
-    'cat.All': '全部',
-    'cat.Lips': '唇部',
-    'cat.Face': '面部',
-    'cat.Eyes': '眼部',
-    'cat.Skincare': '护肤',
-    // hero
-    'hero.title1': '发现你的',
-    'hero.title2': '完美之美',
-    'hero.desc': '基于 AI 的个性化推荐，量身定制你独特的肤色、脸型与个人风格。',
-    'hero.cta': '与 AI 顾问对话 →',
-    // home / category
-    'home.newArrivals': '新品上架',
-    'home.loading': '加载中…',
-    'home.seeAll': '查看全部 →',
-    'home.backHome': '← 返回首页',
-    'home.allProducts': ' — 全部商品',
-    'home.empty': '此分类暂无商品',
-    // favorites
-    'favs.title': '我的收藏',
-    'favs.empty': '还没有收藏',
-    'favs.emptyHint': '点击商品卡片上的爱心来收藏喜欢的商品。',
-    'favs.browse': '去逛逛',
-    // profile
-    'profile.name': '美妆爱好者',
-    'profile.dev': '开发者 · admin',
-    'profile.user': '用户 #',
-    'profile.myFavs': '我的收藏',
-    'profile.myCart': '我的购物车',
-    'profile.signOut': '退出登录',
-    // detail
-    'detail.back': '← 返回',
-    'detail.ingredients': '成分',
-    'detail.howToUse': '使用方法',
-    'detail.recommendedFor': '适合人群',
-    'detail.skinTag': '肤色',
-    'detail.faceTag': '脸型',
-    'detail.addCart': '加入购物车',
-    'detail.added': '✓ 已加入购物车',
-    'detail.save': '🤍 收藏',
-    'detail.saved': '❤️ 已收藏',
-    // agent
-    'agent.title': 'AI 美妆顾问',
-    'agent.subtitle': '告诉我你的特征或想要的妆容',
-    'agent.greeting': '你好！我是你的专属美妆顾问 💄\n\n告诉我你的肤色、脸型或想找什么样的产品 —— 我会帮你找到最合适的！',
-    'agent.placeholder': '例如：我是暖色调皮肤、椭圆脸…',
-    'agent.send': '发送',
-    'agent.thinking': '思考中',
-    'agent.askMore': '我很乐意帮忙！请告诉我更多：\n• 你的肤色（冷调 / 暖调 / 浅 / 深）\n• 你的脸型（椭圆 / 圆 / 方 / 心形）\n• 想要的产品类型（口红 / 粉底 / 睫毛膏 / 护肤品）',
-    'agent.introDefault': '根据你的特征，为你推荐：\n\n',
-    'agent.introCool': '为冷调肤色推荐：\n\n',
-    'agent.introWarm': '为暖调肤色推荐这些精选：\n\n',
-    'agent.introOval': '你的椭圆脸非常百搭，有多种选择：\n\n',
-    'agent.suits': '适合 {tones} 肤色。',
-    'agent.outro': '\n\n点击任意商品查看详情！需要我帮你进一步筛选吗？',
-    'agent.error': '抱歉，出错了：{msg}',
-    // try-on
-    'tryon.title': 'AI 试妆',
-    'tryon.desc': '上传一张照片，描述想要的妆容，AI 将为你呈现效果。',
-    'tryon.upload.title': '点击上传你的照片',
-    'tryon.upload.hint': 'JPEG 或 PNG · 最大 15 MB',
-    'tryon.original': '原图',
-    'tryon.result': '效果',
-    'tryon.resultEmpty': '效果图将在此显示',
-    'tryon.styles': '快速风格',
-    'tryon.promptPlaceholder': '例如：涂上珊瑚色口红，淡妆',
-    'tryon.apply': '生成',
-    'tryon.processing': '处理中…',
-    'tryon.changePhoto': '更换一张照片',
-    // cart
-    'cart.continue': '← 继续购物',
-    'cart.title': '我的购物车',
-    'cart.empty': '购物车空空如也',
-    'cart.emptyHint': '加点喜欢的商品吧！',
-    'cart.browse': '去逛逛',
-    'cart.remove': '移除',
-    'cart.total': '合计',
-    'cart.checkout': '去结算',
-    // auth
-    'auth.welcome': '欢迎回来',
-    'auth.createAccount': '创建账号',
-    'auth.signinTagline': '登录开启你的美妆之旅',
-    'auth.signupTagline': '今天加入 Lumina Beauty',
-    'auth.nickname': '昵称',
-    'auth.nicknamePh': '希望我们如何称呼你？',
-    'auth.username': '用户名',
-    'auth.usernamePh': '请输入用户名（3-50 字符）',
-    'auth.password': '密码',
-    'auth.passwordPh': '至少 8 个字符',
-    'auth.pleaseWait': '请稍候…',
-    'auth.signIn': '登录',
-    'auth.noAccount': '还没有账号？',
-    'auth.hasAccount': '已有账号？',
-    'auth.signUp': '去注册',
-    'auth.signInLink': '去登录',
-    'auth.devQuick': '🚀 以开发者身份进入（admin / 免注册）',
-    'auth.devHint': '💡 开发模式：已预填 admin 账号。生产环境构建（npm run build）后此功能不出现。',
-    'auth.fieldErrors': '具体校验失败原因：',
-    'auth.devLoginFailed': '开发者登录失败：',
-    'auth.backendDown': '后端未启动？',
-    // language switcher
-    'lang.switch': 'EN',
-    // footer
-    'footer.copy': '© 2025 Lumina Beauty AI · 智能驱动美',
-  },
-};
-
-// 简单的全局语言状态，配合 useSyncExternalStore 让所有组件订阅
-const _langListeners = new Set<() => void>();
-let _currentLang: Lang = (() => {
-  try {
-    const saved = localStorage.getItem('lang') as Lang | null;
-    if (saved === 'en' || saved === 'zh') return saved;
-  } catch {}
-  // 浏览器语言为中文时默认中文
-  return (typeof navigator !== 'undefined' && navigator.language?.startsWith('zh')) ? 'zh' : 'en';
-})();
-
-function getLang(): Lang { return _currentLang; }
-function setLang(l: Lang) {
-  _currentLang = l;
-  try { localStorage.setItem('lang', l); } catch {}
-  _langListeners.forEach(fn => fn());
-}
-function useLang(): [Lang, (l: Lang) => void] {
-  const subscribe = (cb: () => void) => { _langListeners.add(cb); return () => _langListeners.delete(cb); };
-  const lang = React.useSyncExternalStore(subscribe, getLang, getLang);
-  return [lang, setLang];
-}
-// 翻译函数：t('key', {tones: 'cool, warm'}) → '适合 cool, warm 肤色。'
-function useT() {
-  const [lang] = useLang();
-  return (key: string, vars?: Record<string, string|number>): string => {
-    let s = I18N[lang][key] ?? I18N.en[key] ?? key;
-    if (vars) for (const [k,v] of Object.entries(vars)) s = s.replace(`{${k}}`, String(v));
-    return s;
-  };
-}
-// 分类名翻译（CATS 数组保留英文 key，渲染时翻译）
-function tCat(t: (k:string)=>string, c: string): string { return t(`cat.${c}`) || c; }
-
 
 // ══════════════════════════════════════════════════════════
 //  STYLES
@@ -330,8 +67,9 @@ img{display:block;max-width:100%}
 .nav-i:hover,.nav-i.on{color:var(--text)}
 .nav-i.on::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--accent);border-radius:1px}
 .nav-badge{position:absolute;top:-7px;right:-10px;background:var(--accent);color:#fff;font-size:.6rem;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
-.lang-btn{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;letter-spacing:.06em;color:var(--sub);padding:6px 10px;border:1px solid var(--border);border-radius:14px;transition:all .2s;margin-left:6px}
-.lang-btn:hover{color:var(--accent);border-color:var(--accent)}
+.lang-select{font-size:.72rem;font-weight:600;color:var(--sub);padding:6px 10px;border:1.5px solid var(--border);border-radius:14px;background:var(--card);cursor:pointer;margin-left:6px;max-width:130px}
+.lang-select:hover{border-color:var(--accent);color:var(--text)}
+.lang-select:focus{outline:none;border-color:var(--accent)}
 
 /* hero */
 .hero{margin:36px 0;padding:72px 64px;background:linear-gradient(135deg,#F5EDE4 0%,#FDF6EE 50%,#EDE6DA 100%);border-radius:24px;position:relative;overflow:hidden}
@@ -499,6 +237,7 @@ img{display:block;max-width:100%}
 @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(200,149,108,.4)}50%{box-shadow:0 0 0 12px rgba(200,149,108,0)}}
 @keyframes gradientFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 @keyframes rotateIn{from{opacity:0;transform:rotate(-8deg) scale(.95)}to{opacity:1;transform:rotate(0) scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 .hero{background:linear-gradient(135deg,#F5EDE4 0%,#FDF6EE 25%,#EDE6DA 50%,#FDF6EE 75%,#F5EDE4 100%);background-size:300% 300%;animation:gradientFlow 18s ease infinite}
 .hero h1{animation:fadeUp .9s cubic-bezier(.2,.7,.2,1) both}
@@ -552,10 +291,10 @@ img{display:block;max-width:100%}
 // ══════════════════════════════════════════════════════════
 export default function App() {
   const t = useT();
-  const [lang, setLangState] = useLang();
   const [page, setPage] = useState<Page>(api.isLoggedIn()?'home':'login');
   const [products, setProducts] = useState<api.Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadErr, setLoadErr] = useState('');
   const [sel, setSel] = useState<api.Product|null>(null);
   const [cart, setCart] = useState<CartItem[]>(() => {
     try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; }
@@ -599,7 +338,7 @@ export default function App() {
   useEffect(() => {
     if (!api.isLoggedIn()) return;
     setLoading(true);
-    api.fetchProducts().then(setProducts).catch(()=>{}).finally(()=>setLoading(false));
+    api.fetchProducts().then(setProducts).catch((e)=>setLoadErr(e.message)).finally(()=>setLoading(false));
   }, [page === 'login' ? 'x' : 'y']); // reload after login
 
   const go = (p: Page) => { setSel(null); setCatPage(null); setPage(p); window.scrollTo(0,0); };
@@ -641,9 +380,7 @@ export default function App() {
               🛒{cartN>0&&<span className="nav-badge">{cartN}</span>}
             </button>
             <button className="nav-i" onClick={()=>go('profile')}>👤</button>
-            <button className="lang-btn" onClick={()=>setLangState(lang==='zh'?'en':'zh')} title="Switch language / 切换语言">
-              🌐 {t('lang.switch')}
-            </button>
+            <LangSwitcher />
           </nav>
         </div></motion.header>
       )}
@@ -677,13 +414,15 @@ export default function App() {
             <h2 className="sec-t">{catF==='All'?t('home.newArrivals'):tCat(t,catF)}</h2>
             {catF!=='All'&&<button className="sec-a" onClick={()=>viewCat(catF)}>{t('home.seeAll')}</button>}
           </div>
-          {loading?<p style={{color:'var(--sub)',padding:'40px 0'}}>{t('home.loading')}</p>:(
+          {loading?<p style={{textAlign:'center',color:'var(--sub)',padding:'40px 0'}}><Spinner/> {t('home.loading')}</p>:
+           loadErr?<p style={{textAlign:'center',color:'var(--err)',padding:'40px 0'}}>{t('agent.error',{msg:loadErr})}</p>:
+           filtered.length===0?<p style={{textAlign:'center',color:'var(--sub)',padding:'40px 0'}}>{t('home.empty')}</p>:
             <div className="grid">
               {(catF==='All'?filtered.slice(0,8):filtered).map(p=>(
                 <Card key={p.id} p={p} fav={favs.has(p.id)} onFav={()=>toggleFav(p.id)} onClick={()=>viewDet(p)}/>
               ))}
             </div>
-          )}
+          }
 
           {catF==='All'&&['Lips','Eyes','Face','Skincare'].map(cat=>{
             const items=products.filter(p=>p.category===cat).slice(0,4);
@@ -783,6 +522,10 @@ function Card({p,fav,onFav,onClick}: CardProps) {
 }
 
 // ── Detail ────────────────────────────────────────────────
+function Spinner({size=20}:{size?:number}){
+  return <span className="spinner" style={{display:'inline-block',width:size,height:size,border:'3px solid var(--border)',borderTopColor:'var(--accent2)',borderRadius:'50%',animation:'spin .6s linear infinite',verticalAlign:'middle'}}/>;
+}
+
 function ReviewStars({r,onRate}:{r:number;onRate?:(v:number)=>void}) {
   return (
     <span style={{display:'inline-flex',gap:2}}>
@@ -802,11 +545,12 @@ function Detail({p,fav,onBack,onFav,onCart}:{p:api.Product;fav:boolean;onBack:()
   const [d,setD]=useState<api.Product|null>(null);
   const [added,setAdded]=useState(false);
   const [reviews,setReviews]=useState<api.Review[]>([]);
+  const [reviewsLoading,setReviewsLoading]=useState(true);
   const [myRating,setMyRating]=useState(5);
   const [myText,setMyText]=useState('');
   const [submitting,setSubmitting]=useState(false);
   useEffect(()=>{api.fetchProduct(p.id).then(setD).catch(()=>setD(p))},[p.id]);
-  useEffect(()=>{api.fetchReviews(p.id).then(setReviews).catch(()=>{})},[p.id]);
+  useEffect(()=>{api.fetchReviews(p.id).then(setReviews).catch(()=>{}).finally(()=>setReviewsLoading(false))},[p.id]);
   const v=d||p;
 
   const submitReview=async()=>{
@@ -850,7 +594,7 @@ function Detail({p,fav,onBack,onFav,onCart}:{p:api.Product;fav:boolean;onBack:()
       {/* ── 评论区块 ── */}
       <div className="det-reviews">
         <h3 style={{fontFamily:'var(--serif)',fontSize:'1.2rem',marginBottom:16}}>
-          用户评价{v.review_count?` (${v.review_count})`:''}
+          {v.review_count?t('detail.reviewCount',{count:v.review_count}):t('detail.reviews')}
           {v.rating?<span style={{marginLeft:8}}><ReviewStars r={Math.round(v.rating)}/> {v.rating}</span>:null}
         </h3>
 
@@ -858,33 +602,38 @@ function Detail({p,fav,onBack,onFav,onCart}:{p:api.Product;fav:boolean;onBack:()
         {api.isLoggedIn()?(
           <div className="det-review-form" style={{marginBottom:20,padding:'16px 20px',background:'var(--bg)',borderRadius:'var(--r)'}}>
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-              <span style={{fontSize:'.82rem',color:'var(--sub)'}}>我的评分：</span>
+              <span style={{fontSize:'.82rem',color:'var(--sub)'}}>{t('detail.myRating')}</span>
               <ReviewStars r={myRating} onRate={setMyRating}/>
             </div>
             <textarea value={myText} onChange={e=>setMyText(e.target.value)}
-              placeholder="分享你的使用感受..."
+              placeholder={t('detail.reviewPlaceholder')}
               style={{width:'100%',minHeight:70,padding:10,border:'1px solid var(--border)',borderRadius:8,fontSize:'.85rem',resize:'vertical',fontFamily:'inherit'}}/>
             <button className="btn btn-p" style={{marginTop:8}} onClick={submitReview} disabled={submitting||!myText.trim()}>
-              {submitting?'提交中...':'发表评价'}
+              {submitting?t('detail.submitting'):t('detail.submitReview')}
             </button>
           </div>
         ):(<div style={{marginBottom:20,padding:16,textAlign:'center',color:'var(--sub)',fontSize:'.82rem'}}>
-          请登录后发表评价
+          {t('detail.loginToReview')}
         </div>)}
 
         {/* 评论列表 */}
-        {reviews.length===0?(
+        {reviewsLoading?(
+          <div style={{textAlign:'center',padding:'30px 0'}}>
+            <Spinner/>
+            <span style={{marginLeft:8,color:'var(--sub)',fontSize:'.85rem'}}>{t('detail.loadingReviews')}</span>
+          </div>
+        ):reviews.length===0?(
           <div style={{textAlign:'center',color:'var(--sub)',padding:'24px 0',fontSize:'.85rem'}}>
-            暂无评价，成为第一个评价的人吧
+            {t('detail.noReviews')}
           </div>
         ):(
           reviews.map(r=>(
             <div key={r.id} style={{padding:'14px 0',borderBottom:'1px solid var(--border)'}}>
               <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
                 <div style={{width:28,height:28,borderRadius:'50%',background:'var(--accent2)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'.75rem',fontWeight:600}}>
-                  {(r.nickname||'匿')[0]}
+                  {(r.nickname||t('detail.anonymous'))[0]}
                 </div>
-                <span style={{fontWeight:600,fontSize:'.85rem'}}>{r.nickname||'匿名用户'}</span>
+                <span style={{fontWeight:600,fontSize:'.85rem'}}>{r.nickname||t('detail.anonymous')}</span>
                 <ReviewStars r={r.rating}/>
                 <span style={{marginLeft:'auto',fontSize:'.7rem',color:'var(--sub)'}}>
                   {new Date(r.created_at).toLocaleDateString()}
@@ -981,7 +730,7 @@ function Agent({products,onView}:{products:api.Product[];onView:(p:api.Product)=
     <div className="ag">
       <div className="ag-head"><h2>{t('agent.title')}</h2><p>{t('agent.subtitle')}</p></div>
       <div className="msgs">
-        {msgs.map((m,i)=>(
+        {!loaded?(<div style={{textAlign:'center',padding:'40px 0'}}><Spinner/><span style={{marginLeft:8,color:'var(--sub)'}}>{t('home.loading')}</span></div>):msgs.map((m,i)=>(
           <div key={i} className={`msg ${m.role==='user'?'u':'a'}`}>
             <div style={{whiteSpace:'pre-wrap'}}>{m.text}</div>
             {m.recs&&m.recs.length>0&&<div style={{marginTop:8}}>
@@ -1044,9 +793,10 @@ function TryOn() {
   const [prm,setPrm]=useState('');
   const [style,setStyle]=useState('');
   const [styles,setStyles]=useState<api.MakeupStyle[]>([]);
+  const [stylesLoading,setStylesLoading]=useState(true);
   const [ld,setLd]=useState(false);
   const [err,setErr]=useState('');
-  React.useEffect(()=>{api.fetchMakeupStyles().then(setStyles).catch(()=>{});},[]);
+  React.useEffect(()=>{api.fetchMakeupStyles().then(setStyles).catch(()=>{}).finally(()=>setStylesLoading(false));},[]);
   const canGo=!!(style||prm.trim());
   const up=(e:React.ChangeEvent<HTMLInputElement>)=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>setOrig(r.result as string);r.readAsDataURL(f);};
   const go=async()=>{if(!orig||!canGo)return;setLd(true);setErr('');try{setRes(await api.tryOnMakeup(orig,{style:style||undefined,prompt:prm.trim()||undefined}))}catch(e:any){setErr(e.message)}finally{setLd(false)}};
@@ -1073,13 +823,15 @@ function TryOn() {
             {res?<img src={res} alt="result"/>:<div style={{aspectRatio:'1',background:'var(--bg)',borderRadius:'var(--r)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--sub)',border:'1px solid var(--border)'}}>{t('tryon.resultEmpty')}</div>}
           </div>
         </div>
-        {styles.length>0&&(
+        {stylesLoading?(
+          <div style={{textAlign:'center',padding:10}}><Spinner size={16}/><span style={{marginLeft:8,color:'var(--sub)',fontSize:'.82rem'}}>{t('home.loading')}</span></div>
+        ):styles.length>0&&(
           <div>
             <div style={{fontSize:'.72rem',fontWeight:600,letterSpacing:'.08em',textTransform:'uppercase' as any,color:'var(--sub)',marginBottom:6}}>{t('tryon.styles')}</div>
             <div className="to-styles">
               {styles.map(s=>(
                 <button key={s.id} type="button" className={`to-style ${style===s.id?'on':''}`} onClick={()=>setStyle(style===s.id?'':s.id)}>
-                  {lang==='zh'?s.name:s.name_en}
+                  {makeupStyleLabel(s, lang)}
                 </button>
               ))}
             </div>
@@ -1137,7 +889,6 @@ function CartPg({cart,setCart,onView,onBack}:{cart:CartItem[];setCart:React.Disp
 // ── Auth ──────────────────────────────────────────────────
 function Auth({mode,onAuth,flip}:{mode:'login'|'register';onAuth:(t:string,u:number)=>void;flip:()=>void}) {
   const t = useT();
-  const [lang, setLangState] = useLang();
   // 🔑 关键改动：开发模式下默认填好 admin 账号密码，无需手动输入
   const [u,setU]=useState(IS_DEV?DEV_ADMIN.username:'');
   const [pw,setPw]=useState(IS_DEV?DEV_ADMIN.password:'');
@@ -1149,10 +900,10 @@ function Auth({mode,onAuth,flip}:{mode:'login'|'register';onAuth:(t:string,u:num
   const submit=async(username:string,password:string,nickname?:string)=>{
     setErr('');setFieldErrors([]);
     // 前端预校验：与后端 RegisterSchema 严格对齐，避免无谓的 422
-    if(!username||!password){setErr(lang==='zh'?'请填写用户名和密码':'Please fill in username and password');return;}
+    if(!username||!password){setErr(t('auth.errRequired'));return;}
     if(mode==='register'){
-      if(username.length<3||username.length>50){setErr(lang==='zh'?'用户名长度应为 3 - 50':'Username must be 3-50 chars');return;}
-      if(password.length<8||password.length>100){setErr(lang==='zh'?'密码长度应为 8 - 100':'Password must be 8-100 chars');return;}
+      if(username.length<3||username.length>50){setErr(t('auth.errUsernameLen'));return;}
+      if(password.length<8||password.length>100){setErr(t('auth.errPasswordLen'));return;}
     }
     setLd(true);
     try{
@@ -1164,9 +915,9 @@ function Auth({mode,onAuth,flip}:{mode:'login'|'register';onAuth:(t:string,u:num
       // 把后端富错误信息（field_errors）拆出来显示
       if(e.fieldErrors?.length){
         setFieldErrors(e.fieldErrors);
-        setErr(e.message||(lang==='zh'?'请求参数不合法':'Invalid request'));
+        setErr(e.message||t('auth.errInvalid'));
       } else {
-        setErr(e.message||(lang==='zh'?'请求失败':'Request failed'));
+        setErr(e.message||t('auth.errFailed'));
       }
     }finally{setLd(false)}
   };
@@ -1192,9 +943,7 @@ function Auth({mode,onAuth,flip}:{mode:'login'|'register';onAuth:(t:string,u:num
 
   return (
     <div className="auth">
-      <button className="lang-btn" style={{position:'absolute',top:14,right:14}} onClick={()=>setLangState(lang==='zh'?'en':'zh')} title="Switch language / 切换语言">
-        🌐 {t('lang.switch')}
-      </button>
+      <LangSwitcher style={{position:'absolute',top:14,right:14}} />
       <h2>{mode==='login'?t('auth.welcome'):t('auth.createAccount')} <span className="sparkle">✨</span></h2>
       <p>{mode==='login'?t('auth.signinTagline'):t('auth.signupTagline')}</p>
 

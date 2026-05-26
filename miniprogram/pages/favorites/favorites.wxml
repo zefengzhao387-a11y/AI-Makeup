@@ -1,5 +1,5 @@
 <view class="page">
-  <view wx:if="{{loading}}" style="text-align:center;padding:100rpx"><text class="sub">Loading…</text></view>
+  <view wx:if="{{loading}}" style="text-align:center;padding:100rpx"><text class="sub">加载中…</text></view>
 
   <view wx:elif="{{!products.length}}" class="empty">
     <text class="title">{{mode === 'favorites' ? '还没有收藏' : '该分类暂无商品'}}</text>
